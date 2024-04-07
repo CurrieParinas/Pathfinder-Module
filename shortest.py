@@ -32,9 +32,10 @@ class GridWithAStar:
         self.end = None
         self.portals = []
         self.init_gui()
+        self.create_map()
 
     def init_gui(self):
-        self.canvas = tk.Canvas(self.master, width=self.cols*20, height=self.rows*20)
+        self.canvas = tk.Canvas(self.master, width=self.cols*10, height=self.rows*10)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.on_canvas_click)
         self.restart_button = tk.Button(self.master, text="Restart", command=self.restart)
@@ -59,10 +60,30 @@ class GridWithAStar:
                     color = "orange"
                 elif cell.state == "portal_exit":
                     color = "purple"
-                self.canvas.create_rectangle(y*20, x*20, y*20+20, x*20+20, fill=color, outline="gray")
+                self.canvas.create_rectangle(y*10, x*10, y*10+10, x*10+10, fill=color, outline="gray")
+
+    def create_map(self):
+        map0 = []
+        map0.append(["#","#","#","#","#","A","#"])
+        map0.append(["#"," "," "," ","#"," ","#"])
+        map0.append(["#"," ","#"," ","#"," ","#"])
+        map0.append(["#"," ","#"," "," "," ","#"])
+        map0.append(["#"," ","#","#","#"," ","#"])
+        map0.append(["#"," "," "," ","#"," ","#"])
+        map0.append(["#","#","#","B","#","#","#"])
+
+        for i, row in enumerate(map0):
+            for j, item in enumerate(row):
+                if item == "#":
+                    self.cells[i][j].state = "obstacle"
+                elif item == "A":
+                    self.start = self.cells[i][j]
+                elif item == "B":
+                    self.end = self.cells[i][j]
+        self.draw_grid()
 
     def on_canvas_click(self, event):
-        x, y = event.y // 20, event.x // 20
+        x, y = event.y // 10, event.x // 10
         cell = self.cells[x][y]
         if cell == self.start:
             self.start = None
@@ -115,7 +136,7 @@ class GridWithAStar:
         path.reverse()
         for cell in path:
             if cell.state not in ["start", "end"]:
-                self.canvas.create_rectangle(cell.y*20, cell.x*20, cell.y*20+20, cell.x*20+20, fill="blue", outline="gray")
+                self.canvas.create_rectangle(cell.y*10, cell.x*10, cell.y*10+10, cell.x*10+10, fill="blue", outline="gray")
 
     def a_star_search(self, use_portals=True):
         if not self.start or not self.end:
@@ -167,7 +188,7 @@ class GridWithAStar:
 
 def main():
     root = tk.Tk()
-    grid = GridWithAStar(root, 20, 30)  # Example grid size
+    grid = GridWithAStar(root, 70, 60)  # Example grid size
     root.mainloop()
 
 if __name__ == "__main__":
