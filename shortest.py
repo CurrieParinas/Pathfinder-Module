@@ -63,23 +63,15 @@ class GridWithAStar:
                 self.canvas.create_rectangle(y*10, x*10, y*10+10, x*10+10, fill=color, outline="gray")
 
     def create_map(self):
-        map0 = []
-        map0.append(["#","#","#","#","#","A","#"])
-        map0.append(["#"," "," "," ","#"," ","#"])
-        map0.append(["#"," ","#"," ","#"," ","#"])
-        map0.append(["#"," ","#"," "," "," ","#"])
-        map0.append(["#"," ","#","#","#"," ","#"])
-        map0.append(["#"," "," "," ","#"," ","#"])
-        map0.append(["#","#","#","B","#","#","#"])
-
-        for i, row in enumerate(map0):
-            for j, item in enumerate(row):
-                if item == "#":
-                    self.cells[i][j].state = "obstacle"
-                elif item == "A":
-                    self.start = self.cells[i][j]
-                elif item == "B":
-                    self.end = self.cells[i][j]
+        with open("map.txt", "r") as file:
+            for i, row in enumerate(file):
+                for j, item in enumerate(row):        
+                    if item == "#":
+                        self.cells[i][j].state = "obstacle"
+                    elif item == "A":
+                        self.start = self.cells[i][j]
+                    elif item == "B":
+                        self.end = self.cells[i][j]
         self.draw_grid()
 
     def on_canvas_click(self, event):
