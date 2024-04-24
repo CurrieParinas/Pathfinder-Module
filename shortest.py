@@ -35,7 +35,7 @@ class GridWithAStar:
         self.create_map()
 
     def init_gui(self):
-        self.canvas = tk.Canvas(self.master, width=self.cols*10, height=self.rows*10)
+        self.canvas = tk.Canvas(self.master, width=self.cols*7, height=self.rows*7)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.on_canvas_click)
         self.restart_button = tk.Button(self.master, text="Restart", command=self.restart)
@@ -60,7 +60,7 @@ class GridWithAStar:
                     color = "orange"
                 elif cell.state == "portal_exit":
                     color = "purple"
-                self.canvas.create_rectangle(y*10, x*10, y*10+10, x*10+10, fill=color, outline="gray")
+                self.canvas.create_rectangle(y*7, x*7, y*7+7, x*7+7, fill=color, outline="gray")
 
     def create_map(self):
         with open("map.txt", "r") as file:
@@ -75,7 +75,7 @@ class GridWithAStar:
         self.draw_grid()
 
     def on_canvas_click(self, event):
-        x, y = event.y // 10, event.x // 10
+        x, y = event.y // 7, event.x // 7
         cell = self.cells[x][y]
         if cell == self.start:
             self.start = None
@@ -128,7 +128,7 @@ class GridWithAStar:
         path.reverse()
         for cell in path:
             if cell.state not in ["start", "end"]:
-                self.canvas.create_rectangle(cell.y*10, cell.x*10, cell.y*10+10, cell.x*10+10, fill="blue", outline="gray")
+                self.canvas.create_rectangle(cell.y*7, cell.x*7, cell.y*7+7, cell.x*7+7, fill="blue", outline="gray")
 
     def a_star_search(self, use_portals=True):
         if not self.start or not self.end:
@@ -180,7 +180,7 @@ class GridWithAStar:
 
 def main():
     root = tk.Tk()
-    grid = GridWithAStar(root, 70, 60)  # Example grid size
+    grid = GridWithAStar(root, 89, 74)  # Example grid size
     root.mainloop()
 
 if __name__ == "__main__":
