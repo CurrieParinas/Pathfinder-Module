@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinding Example</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gridCanvas" height="890" width="740"></canvas>
+
+    <script src="./node_modules/pathfinding/visual/lib/pathfinding-browser.min.js"></script>
+
+    <script>
+        var canvas = document.getElementById('gridCanvas');
+        var ctx = canvas.getContext('2d');
+        var gridSize = 10;
+        var gridWidth = 74;
+        var gridHeight = 89;
+
+        // Initialize the grid
+        var grid = new PF.Grid(gridHeight, gridWidth);
+
+        // Fetch map content from file
+        fetch('http://localhost:8080/map.txt')
+            .then(response => response.text())
+            .then(mapText => {
+                var map = [];
+                mapText.split('\n').forEach(row => {
+                    var rowData = [];
+                    for (var i = 0; i < row.length; i++) {
+                        rowData.push(row.charAt(i));
+                    }
+                    map.push(rowData);
+                });
+                drawGrid(map);
+                initializeGrid(map);
+                renderPath(map);
+            })
+            .catch(error => console.error('Error fetching map:', error));
+
+        function drawGrid(map) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < gridHeight; i++) {
+                for (var j = 0; j < gridWidth; j++) {
+                    if (i >= map.length || j >= map[i].length){
+                        ctx.fillStyle = 'white';
+                    } else {
+                        var symbol = map[i][j];
+                        if (symbol === "#") {
+                            ctx.fillStyle = 'black'; // Wall
+                        } else {
+                            ctx.fillStyle = 'white'; // Walkable
+                        }
+                    }
+                    ctx.fillRect(j * gridSize, i * gridSize, gridSize, gridSize);
+                    // ctx.strokeRect(j * gridSize, i * gridSize, gridSize, gridSize);
+                }
+            }
+        }
+
+        function initializeGrid(map) {
+            // Convert map to grid format
+            for (var i = 0; i < gridHeight; i++) {
+                for (var j = 0; j < gridWidth; j++) {
+                    if (i >= map.length || j >= map[i].length){
+                        grid.setWalkableAt(i, j);
+                    } else {
+                        var symbol = map[i][j];
+                        grid.setWalkableAt(i, j, symbol !== "#");
+                    }
+                }
+            }
+        }
+
+        function renderPath(map) {
+            var finder = new PF.AStarFinder();
+            var path = finder.findPath(15, 57, 71, 8, grid);
+            console.log(path);
+
+            // Fill path blocks with a different color
+            for (var i = 0; i < path.length; i++) {
+                var x = path[i][0];
+                var y = path[i][1];
+                ctx.fillStyle = 'green'; // Change this color if needed
+                ctx.fillRect(y * gridSize, x * gridSize, gridSize, gridSize);
+                // ctx.strokeRect(y * gridSize, x * gridSize, gridSize, gridSize);
+            }
+        }
+    </script>
+</body>
+</html>
