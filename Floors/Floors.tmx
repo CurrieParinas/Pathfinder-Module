@@ -224,7 +224,7 @@
 </data>
   </layer>
  </group>
- <group id="4" name="Floor1">
+ <group id="4" name="Floor1" locked="1">
   <imagelayer id="2" name="Image Layer 1" offsetx="110" offsety="30">
    <image source="Floor1.png" width="772" height="936"/>
   </imagelayer>
