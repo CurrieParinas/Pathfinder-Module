@@ -361,7 +361,7 @@
 
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
-                    grid.setWalkableAt(j, i, map[j][i] !== '#');
+                    grid.setWalkableAt(j, i, map[j][i] !== '#' && map[j][i] !== ' ');
                 }
             }
             var finder = new PF.AStarFinder();
