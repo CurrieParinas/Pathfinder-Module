@@ -1,0 +1,203 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wayfinder Pro - Finder</title>
+</head>
+<body>
+    <h1>Select a Room</h1>
+    <form action="/finder/displayPath/" method="post"> <!-- Adjust the action URL as needed -->
+        {% csrf_token %}
+        <select name="room_selection">
+            {% for room in rooms %}
+                <option value="{{ room.slug }}">{{ room.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Submit">
+    </form>
+
+    
+    
+    <!-- Conditional to render the path if room has been selected -->
+    {% if selectedRoom %}
+        <h1>{{ selectedRoom.name }}</h1>
+        <script>
+            var gridSize = 10;
+            var gridWidth = 100;
+            var gridHeight = 100;
+            var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv','RH-FLOOR-3.csv'];
+            // var floors = ['RH-FLOOR-1-testing.csv', 'RH-FLOOR-2-testing.csv'];
+            var roomFound = false;
+            var roomFoundFloorIndex = -1;
+
+            function startMultiFloorPathFinding(slug,x,y,floorNumber) {
+                roomFound = false;
+                // var roomName = roomNamefromtable.toUpperCase();
+                fetchAndFindRoom(slug,x,y,floorNumber);
+            }
+
+            async function fetchAndFindRoom(slug,x,y,floorNumber) {
+                endLoop = false
+                for (let i = 0; i < floors.length; i++) {
+                    const floor = floors[i];
+                    if(!endLoop){
+                            try {
+                            const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
+                            const mapText = await response.text();
+                            const map = parseMap(mapText);
+                            let startPoint = findStartPoint(map);
+                            // let endPoint = findRoomCoordinates(map, roomName) || findRoomCoordinates(map, 'St');'
+                            let endPoint = []
+
+                            //check if same floor to use x,y of room
+                            if(floorNumber == i+1){
+                                endPoint = [x,y]
+                                endLoop = true
+                            }else{
+                                //redirect to stairs if not same floor
+                                endPoint = findRoomCoordinates(map, 'St')
+                            }
+
+                            console.log(`Floor ${i+1}: Start point: ${startPoint}, End point: ${endPoint}`);
+
+                            if (endPoint) {
+                                roomFound = true;
+                                roomFoundFloorIndex = i;
+                                drawGridAndPath(map, startPoint, endPoint, i);
+                                // if(roomFoundFloorIndex === 0 && i === 0 && roomFound) break;
+
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching or processing map from ${floor}:`, error);
+                        }
+                    }
+                    
+                }
+
+                if (!roomFound) {
+                    console.error('Room not found on any floor.');
+                }
+            }
+
+            function drawGridAndPath(map, startPoint, endPoint, floorIndex) {
+                const ctx = createCanvasForFloor(floorIndex);
+                drawGrid(map, ctx);
+                if (startPoint && endPoint) {
+                    initializeGridAndRenderPath(map, startPoint, endPoint, ctx);
+                }
+            }
+
+            function createCanvasForFloor(index) {
+                const canvasContainer = document.getElementById('canvasContainer');
+                const canvas = document.createElement('canvas');
+                canvas.id = `floorCanvas${index}`;
+                canvas.width = 1000;
+                canvas.height = 1000;
+                canvasContainer.appendChild(canvas);
+                return canvas.getContext('2d');
+            }
+
+            function parseMap(mapText) {
+                return mapText.split('\n').map(row => row.split(','));
+            }
+
+            function findStartPoint(map) {
+                for (let i = 0; i < map.length; i++) {
+                    for (let j = 0; j < map[i].length; j++) {
+                        if (map[i][j].trim() === 'S') {
+                            return [i, j];
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function findRoomCoordinates(map, roomName) {
+                for (let i = 0; i < map.length; i++) {
+                    for (let j = 0; j < map[i].length; j++) {
+                        if (map[i][j].trim().toUpperCase() === roomName) {
+                            return [i, j];
+                        }
+                        else if (map[i][j].trim() === roomName && roomName === 'St') {
+                            return [i, j];
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function drawGrid(map, ctx) {
+                ctx.clearRect(0, 0, 1000, 1000);
+                for (let i = 0; i < map.length; i++) {
+                    for (let j = 0; j < map[i].length; j++) {
+                        ctx.fillStyle = (map[i][j] === '#') ? 'black' : 'white';
+                        ctx.fillRect(j * gridSize, i * gridSize, gridSize, gridSize);
+                    }
+                }
+            }
+
+            function initializeGridAndRenderPath(map, startPoint, endPoint, ctx) {
+                var grid = new PF.Grid(map[0].length, map.length);
+
+                for (let i = 0; i < map.length; i++) {
+                    for (let j = 0; j < map[i].length; j++) {
+                        grid.setWalkableAt(j, i, map[j][i] !== '#');
+                    }
+                }
+                var finder = new PF.AStarFinder();
+                var path = finder.findPath(startPoint[0], startPoint[1], endPoint[0], endPoint[1], grid);
+                console.log('Path:', path);
+
+                if (path.length === 0) {
+                    console.log('No path found or start/end points are blocked.');
+                    return;
+                }
+
+                let step = 0;
+
+                var highlights = [0];
+                var numberOfHighlights = 3;
+                var highlightLength = 1;
+                var spacing = Math.floor(path.length / numberOfHighlights);
+
+                for (let i = 1; i < numberOfHighlights; i++) {
+                    highlights.push((highlights[i - 1] + spacing) % path.length);
+                }
+
+                function drawPathStep() {
+                    ctx.clearRect(0, 0, 1000, 1000);
+                    drawGrid(map, ctx);
+
+                    path.forEach((pos) => {
+                        ctx.fillStyle = 'darkgreen';
+                        ctx.fillRect(pos[1] * gridSize, pos[0] * gridSize, gridSize, gridSize);
+                    });
+
+                    highlights.forEach((start, index) => {
+                        for (let i = 0; i < highlightLength; i++) {
+                            let pos = path[(start + i) % path.length];
+                            ctx.fillStyle = 'limegreen';
+                            ctx.fillRect(pos[1] * gridSize, pos[0] * gridSize, gridSize, gridSize);
+                        }
+
+                        highlights[index] = (start + 1) % path.length;
+                    });
+
+                    setTimeout(drawPathStep, 100);
+                }
+
+                drawPathStep();
+            }
+            
+            console.log('{{ selectedRoom.slug }}')
+        startMultiFloorPathFinding('{{ selectedRoom.slug }}', '{{ selectedRoom.x }}', '{{ selectedRoom.y }}', '{{ selectedRoom.floorNumber }}')
+        </script>
+    {% endif %}
+  
+    <div class="canvasContainer" id="canvasContainer"></div>
+
+    
+    <script src="{% static 'js/pathfinding-browser.min.js' %}"></script>
+</body>
+</html>
