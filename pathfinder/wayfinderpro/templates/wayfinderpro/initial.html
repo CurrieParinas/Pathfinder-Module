@@ -367,7 +367,7 @@
         function findStartPoint(map) {
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
-                    if (map[i][j].trim() === 'S') {
+                    if (map[i][j].trim() === 'E') {
                         return [i, j];
                     }
                 }
@@ -393,7 +393,13 @@
             ctx.clearRect(0, 0, 1000, 1000);
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
-                    ctx.fillStyle = (map[i][j] === '#') ? 'black' : 'white';
+                    if (map[i][j] === '#') {
+                        ctx.fillStyle = 'black';
+                    } else if (map[i][j] === 'St' || map[i][j] === 's' || map[i][j] === 'x') {
+                        ctx.fillStyle = '#a7c7e7';
+                    } else {
+                        ctx.fillStyle = 'white';
+                    }
                     ctx.fillRect(j * gridSize, i * gridSize, gridSize, gridSize);
                 }
             }
@@ -404,7 +410,7 @@
 
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
-                    grid.setWalkableAt(j, i, map[j][i] !== '#');
+                    grid.setWalkableAt(j, i, map[j][i] !== '#' && map[j][i] !== ' ' && map[j][i] !== 's');
                 }
             }
             var finder = new PF.AStarFinder();
