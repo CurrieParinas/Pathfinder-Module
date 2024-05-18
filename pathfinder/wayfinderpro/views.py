@@ -7,4 +7,4 @@ def home(request):
     context = {
         'rooms': Room.objects.all()
     }
-    return render(request, 'wayfinderpro/home.html', context)
+    return render(request, 'wayfinderpro/initial.html', context)
