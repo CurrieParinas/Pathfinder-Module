@@ -13,6 +13,8 @@
         canvas {
             border: 1px solid black;
             margin-top: 10px;
+            width: 800px;
+            height: 800px;
         }
         .navbar {
             display: flex;
@@ -21,7 +23,6 @@
             align-items: center;
             color: white;
             background-color: #800000;
-            
         }
         .logo {
             display: flex;
@@ -114,7 +115,7 @@
             flex-direction: row;
             gap: 5px;
         }
-        .button button{
+        .button button {
             font-family: 'Montserrat', sans-serif;
             font-size: .8rem;
             font-weight: 400;
@@ -129,8 +130,57 @@
         .canvasContainer {
             display: flex;
             justify-content: center;
+            align-items: center;
             flex-direction: column;
-            margin-left: 50px;
+            /* margin-left: 50px; */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            justify-content: center;
+            text-align: center;
+            padding: 8px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 1.5rem;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            /* max-width: 1000px; */
+            height: 90%;
+            /* max-height: 1000px; */
+            overflow: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        canvas {
+            border: 1px solid black;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -138,22 +188,20 @@
     <div class="dummycontainer">
         <div class="navbar">
             <div class="logo">
-                <img src="../../../static/assets/Logo_Navbar.png" alt="" class="logo">
-                
-                <span class="about"><img src="../../../static/assets/info.svg" alt="">ABOUT ROOMS</span>
+                <img src="{% static 'assets/Logo_Navbar.png' %}" alt="" class="logo">
+                <span class="about"><img src="{% static 'assets/info.svg' %}" alt="">ABOUT ROOMS</span>
             </div>
             <div class="list">
                 <div class="colleges">
-                    <img src="../../../static/assets/school.svg" alt="">
+                    <img src="{% static 'assets/school.svg' %}" alt="">
                     <span>COLLEGES</span>
                 </div>
                 <div class="viewrooms">
-                    <img src="../../../static/assets/door.svg" alt="">
+                    <img src="{% static 'assets/door.svg' %}" alt="">
                     <span>VIEW ROOM</span>
                 </div>
                 <div class="welcome">
                     <span>Welcome, <b>GUEST</b></span>
-                    
                 </div>
                 <div class="welcome">
                     <span><b>|</b></span>
@@ -161,7 +209,6 @@
                 <div class="welcome">
                     <span><b>Log In</b></span>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -169,177 +216,94 @@
         <div class="table">
             <h1>View Rooms</h1>
             <table>
-                <tr>
-                    <th>Room</th>
-                    <th>Building</th>
-                    <th>College</th>
-                    <th>Capacity</th>
-                    <th>Room Type</th>
-                    <th>Actions</th>
-                </tr>
-
-                <!-- <tr>
-                    <th>Room</th>
-                    <th>slug</th>
-                    <th>x</th>
-                    <th>y</th>
-                    <th>floor</th>
-                    <th>Actions</th>
-                </tr> -->
-                
-                {%for room in rooms%}
-                <tr>
-                    <td>{{room.name}}</td>
-                    <td>{{room.slug}}</td>
-                    <td>{{room.x}}</td>
-                    <td>{{room.y}}</td>
-                    <td>{{room.floorNumber}}</td>
-                    <td class="button">
-                        <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('{{ room.slug }}', '{{ room.x }}', '{{ room.y }}', '{{ room.floorNumber }}')">Find Room</button>
-
-                    </td>
-                </tr>
-                {%endfor%}
-           
-               <!-- 
-                <tr>
-                    <td>RH-110</td>
-                    <td>College of Allied Medical Professions</td>
-                    <td>College of Allied Medical Professions</td>  
-                    <td>60</td>
-                    <td>Auditorium</td>
-                    <td class="button">
-                        <button class="button button-red" style="background-color: #800000; color: #ffffff;">Show Equipment</button>
-                        <button class="button button-blue" style="background-color: #505050; color: #ffffff;">View Schedule</button>
-                        <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-110')">Find Room</button>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td>RH-201</td>
-                    <td>College of Allied Medical Professions</td>
-                    <td>College of Allied Medical Professions</td>
-                    <td>30</td>
-                    <td>Lecture Room</td>
-                    <td class="button">
-                        <button class="button button-red" style="background-color: #800000; color: #ffffff;">Show Equipment</button>
-                        <button class="button button-blue" style="background-color: #505050; color: #ffffff;">View Schedule</button>
-                        <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-201')">Find Room</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>RH-203</td>
-                    <td>College of Allied Medical Professions</td>
-                    <td>College of Allied Medical Professions</td>
-                    <td>15</td>
-                    <td>Lecture Room</td>
-                    <td class="button">
-                        <button class="button button-red" style="background-color: #800000; color: #ffffff;">Show Equipment</button>
-                        <button class="button button-blue" style="background-color: #505050; color: #ffffff;">View Schedule</button>
-                        <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-203')">Find Room</button>
-                    </td>
-                </tr>
-                 
-                <tr>
-                    <td>RH-202</td>
-                    <td>College of Allied Medical Professions</td>
-                    <td>College of Allied Medical Professions</td>
-                    <td>8</td>
-                    <td>Study Room</td>
-                    <td class="button">
-                        <button class="button button-red" style="background-color: #800000; color: #ffffff;">Show Equipment</button>
-                        <button class="button button-blue" style="background-color: #505050; color: #ffffff;">View Schedule</button>
-                        <button class="button" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-202')">Find Room</button>
-                    </td>
-                </tr>
-                 "startMultiFloorPathFinding('Room 202')" -->
-                <!-- <tr>
-                    <td>RH-301</td>
-                    <td>College of Engineering</td>
-                    <td>College of Engineering</td>
-                    <td>25</td>
-                    <td>Computer Lab</td>
-                    <td class="button">
-                        <button class="button button-red" style="background-color: #800000; color: #ffffff;">Show Equipment</button>
-                        <button class="button button-blue" style="background-color: #505050; color: #ffffff;">View Schedule</button>
-                        <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-301')">Find Room</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>RH-303</td>
-                    <td>College of Engineering</td>
-                    <td>College of Engineering</td>
-                    <td>20</td>
-                    <td>Laboratory</td>
-                    <td class="button">
-                        <button class="button button-red" style="background-color: #800000; color: #ffffff;">Show Equipment</button>
-                        <button class="button button-blue" style="background-color: #505050; color: #ffffff;">View Schedule</button>
-                        <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-303')">Find Room</button>
-                    </td>
-                </tr> --> 
+                <thead>
+                    <tr>
+                        <th>Room</th>
+                        <th>Building</th>
+                        <th>College</th>
+                        <th>Capacity</th>
+                        <th>Room Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for room in rooms %}
+                    <tr>
+                        <td>{{ room.name }}</td>
+                        <td>{{ room.slug }}</td>
+                        <td>{{ room.x }}</td>
+                        <td>{{ room.y }}</td>
+                        <td>{{ room.floorNumber }}</td>
+                        <td class="button">
+                            <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('{{ room.slug }}', '{{ room.x }}', '{{ room.y }}', '{{ room.floorNumber }}')">Find Room</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
-
-    <div class="canvasContainer" id="canvasContainer"></div>
     </div>
-
-    
+    <div id="mapModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="canvasContainer" id="canvasContainer"></div>
+        </div>
+    </div>
     <script>
-        var gridSize = 10;
-        var gridWidth = 100;
-        var gridHeight = 100;
-        var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv','RH-FLOOR-3.csv'];
-        // var floors = ['RH-FLOOR-1-testing.csv', 'RH-FLOOR-2-testing.csv'];
+        var gridSize = 8;
+        var gridWidth = 80;
+        var gridHeight = 80;
+        var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv', 'RH-FLOOR-3.csv'];
         var roomFound = false;
         var roomFoundFloorIndex = -1;
 
-        function startMultiFloorPathFinding(slug,x,y,floorNumber) {
+        function startMultiFloorPathFinding(slug, x, y, floorNumber) {
             roomFound = false;
-            // var roomName = roomNamefromtable.toUpperCase();
-            fetchAndFindRoom(slug,x,y,floorNumber);
+            clearCanvasContainer();
+            modal.style.display = "block";
+            fetchAndFindRoom(slug, x, y, floorNumber);
         }
 
-        async function fetchAndFindRoom(slug,x,y,floorNumber) {
-            endLoop = false
+        async function fetchAndFindRoom(slug, x, y, floorNumber) {
+            var endLoop = false;
             for (let i = 0; i < floors.length; i++) {
                 const floor = floors[i];
-                if(!endLoop){
-                        try {
+                if (!endLoop) {
+                    try {
                         const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
                         const mapText = await response.text();
                         const map = parseMap(mapText);
                         let startPoint = findStartPoint(map);
-                        // let endPoint = findRoomCoordinates(map, roomName) || findRoomCoordinates(map, 'St');'
-                        let endPoint = []
+                        let endPoint = [];
 
-                        //check if same floor to use x,y of room
-                        if(floorNumber == i+1){
-                            endPoint = [x,y]
-                            endLoop = true
-                        }else{
-                            //redirect to stairs if not same floor
-                            endPoint = findRoomCoordinates(map, 'St')
+                        if (floorNumber == i + 1) {
+                            endPoint = [x, y];
+                            endLoop = true;
+                        } else {
+                            endPoint = findRoomCoordinates(map, 'St');
                         }
 
-                        console.log(`Floor ${i+1}: Start point: ${startPoint}, End point: ${endPoint}`);
+                        console.log(`Floor ${i + 1}: Start point: ${startPoint}, End point: ${endPoint}`);
 
                         if (endPoint) {
                             roomFound = true;
                             roomFoundFloorIndex = i;
                             drawGridAndPath(map, startPoint, endPoint, i);
-                            // if(roomFoundFloorIndex === 0 && i === 0 && roomFound) break;
-
                         }
                     } catch (error) {
                         console.error(`Error fetching or processing map from ${floor}:`, error);
                     }
                 }
-                
             }
 
             if (!roomFound) {
                 console.error('Room not found on any floor.');
             }
+        }
+
+        function clearCanvasContainer() {
+            const canvasContainer = document.getElementById('canvasContainer');
+            canvasContainer.innerHTML = '';
         }
 
         function drawGridAndPath(map, startPoint, endPoint, floorIndex) {
@@ -354,8 +318,8 @@
             const canvasContainer = document.getElementById('canvasContainer');
             const canvas = document.createElement('canvas');
             canvas.id = `floorCanvas${index}`;
-            canvas.width = 1000;
-            canvas.height = 1000;
+            canvas.width = 800;
+            canvas.height = 800;
             canvasContainer.appendChild(canvas);
             return canvas.getContext('2d');
         }
@@ -380,8 +344,7 @@
                 for (let j = 0; j < map[i].length; j++) {
                     if (map[i][j].trim().toUpperCase() === roomName) {
                         return [i, j];
-                    }
-                    else if (map[i][j].trim() === roomName && roomName === 'St') {
+                    } else if (map[i][j].trim() === roomName && roomName === 'St') {
                         return [i, j];
                     }
                 }
@@ -458,6 +421,18 @@
             drawPathStep();
         }
 
+        var modal = document.getElementById("mapModal");
+        var span = document.getElementsByClassName("close")[0];
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     </script>
     <script src="{% static 'js/pathfinding-browser.min.js' %}"></script>
 </body>
