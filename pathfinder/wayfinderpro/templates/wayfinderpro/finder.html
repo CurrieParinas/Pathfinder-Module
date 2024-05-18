@@ -7,9 +7,10 @@
 </head>
 <body>
     <h1>Select a Room</h1>
-    <form action="/finder/displayPath/" method="post"> <!-- Adjust the action URL as needed -->
+    <form action="/finder/displayPath/" method="post">
         {% csrf_token %}
-        <select name="room_selection">
+        <input type="text" id="search-room" placeholder="Search room...">
+        <select name="room_selection" id="room-selection">
             {% for room in rooms %}
                 <option value="{{ room.slug }}">{{ room.name }}</option>
             {% endfor %}
@@ -197,7 +198,28 @@
   
     <div class="canvasContainer" id="canvasContainer"></div>
 
-    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-room');
+            const selectElement = document.getElementById('room-selection');
+            const options = Array.from(selectElement.options);
+
+            searchInput.addEventListener('input', function() {
+                const searchText = searchInput.value.toLowerCase();
+
+                // Clear the current options
+                selectElement.innerHTML = '';
+
+                // Filter and add the options that match the search text
+                options.forEach(option => {
+                    if (option.text.toLowerCase().includes(searchText)) {
+                        selectElement.appendChild(option);
+                    }
+                });
+            });
+        });
+    </script>
+
     <script src="{% static 'js/pathfinding-browser.min.js' %}"></script>
 </body>
 </html>
