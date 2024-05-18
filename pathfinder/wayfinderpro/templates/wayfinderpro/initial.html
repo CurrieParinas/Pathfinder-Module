@@ -177,6 +177,31 @@
                     <th>Room Type</th>
                     <th>Actions</th>
                 </tr>
+
+                <!-- <tr>
+                    <th>Room</th>
+                    <th>slug</th>
+                    <th>x</th>
+                    <th>y</th>
+                    <th>floor</th>
+                    <th>Actions</th>
+                </tr> -->
+                
+                {%for room in rooms%}
+                <tr>
+                    <td>{{room.name}}</td>
+                    <td>{{room.slug}}</td>
+                    <td>{{room.x}}</td>
+                    <td>{{room.y}}</td>
+                    <td>{{room.floorNumber}}</td>
+                    <td class="button">
+                        <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('{{ room.slug }}', '{{ room.x }}', '{{ room.y }}', '{{ room.floorNumber }}')">Find Room</button>
+
+                    </td>
+                </tr>
+                {%endfor%}
+           
+               <!-- 
                 <tr>
                     <td>RH-110</td>
                     <td>College of Allied Medical Professions</td>
@@ -189,6 +214,7 @@
                         <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-110')">Find Room</button>
                     </td>
                 </tr>
+                
                 <tr>
                     <td>RH-201</td>
                     <td>College of Allied Medical Professions</td>
@@ -213,7 +239,7 @@
                         <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('RH-203')">Find Room</button>
                     </td>
                 </tr>
-                 <!--
+                 
                 <tr>
                     <td>RH-202</td>
                     <td>College of Allied Medical Professions</td>
@@ -262,39 +288,53 @@
         var gridSize = 10;
         var gridWidth = 100;
         var gridHeight = 100;
-        // var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv', 'RH-FLOOR-3.csv'];
-        var floors = ['RH-FLOOR-1-testing.csv', 'RH-FLOOR-2-testing.csv'];
+        var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv','RH-FLOOR-3.csv'];
+        // var floors = ['RH-FLOOR-1-testing.csv', 'RH-FLOOR-2-testing.csv'];
         var roomFound = false;
         var roomFoundFloorIndex = -1;
 
-        function startMultiFloorPathFinding(roomNamefromtable) {
+        function startMultiFloorPathFinding(slug,x,y,floorNumber) {
             roomFound = false;
-            var roomName = roomNamefromtable.toUpperCase();
-            fetchAndFindRoom(roomName);
+            // var roomName = roomNamefromtable.toUpperCase();
+            fetchAndFindRoom(slug,x,y,floorNumber);
         }
 
-        async function fetchAndFindRoom(roomName) {
+        async function fetchAndFindRoom(slug,x,y,floorNumber) {
+            endLoop = false
             for (let i = 0; i < floors.length; i++) {
                 const floor = floors[i];
-                try {
-                    const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
-                    const mapText = await response.text();
-                    const map = parseMap(mapText);
-                    let startPoint = findStartPoint(map);
-                    let endPoint = findRoomCoordinates(map, roomName) || findRoomCoordinates(map, 'St');
+                if(!endLoop){
+                        try {
+                        const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
+                        const mapText = await response.text();
+                        const map = parseMap(mapText);
+                        let startPoint = findStartPoint(map);
+                        // let endPoint = findRoomCoordinates(map, roomName) || findRoomCoordinates(map, 'St');'
+                        let endPoint = []
 
-                    console.log(`Floor ${i}: Start point: ${startPoint}, End point: ${endPoint}`);
+                        //check if same floor to use x,y of room
+                        if(floorNumber == i+1){
+                            endPoint = [x,y]
+                            endLoop = true
+                        }else{
+                            //redirect to stairs if not same floor
+                            endPoint = findRoomCoordinates(map, 'St')
+                        }
 
-                    if (endPoint) {
-                        roomFound = true;
-                        roomFoundFloorIndex = i;
-                        drawGridAndPath(map, startPoint, endPoint, i);
-                        // if(roomFoundFloorIndex === 0 && i === 0 && roomFound) break;
+                        console.log(`Floor ${i+1}: Start point: ${startPoint}, End point: ${endPoint}`);
 
+                        if (endPoint) {
+                            roomFound = true;
+                            roomFoundFloorIndex = i;
+                            drawGridAndPath(map, startPoint, endPoint, i);
+                            // if(roomFoundFloorIndex === 0 && i === 0 && roomFound) break;
+
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching or processing map from ${floor}:`, error);
                     }
-                } catch (error) {
-                    console.error(`Error fetching or processing map from ${floor}:`, error);
                 }
+                
             }
 
             if (!roomFound) {
