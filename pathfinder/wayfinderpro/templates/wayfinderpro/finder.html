@@ -10,7 +10,8 @@
     <form action="/finder/displayPath/" method="post">
         {% csrf_token %}
         <input type="text" id="search-room" placeholder="Search room...">
-        <select name="room_selection" id="room-selection">
+        <br>
+        <select name="room_selection" id="room-selection" size = 5>
             {% for room in rooms %}
                 <option value="{{ room.slug }}">{{ room.name }}</option>
             {% endfor %}
@@ -197,28 +198,42 @@
     {% endif %}
   
     <div class="canvasContainer" id="canvasContainer"></div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('search-room');
             const selectElement = document.getElementById('room-selection');
             const options = Array.from(selectElement.options);
-
+        
             searchInput.addEventListener('input', function() {
                 const searchText = searchInput.value.toLowerCase();
-
-                // Clear the current options
-                selectElement.innerHTML = '';
-
-                // Filter and add the options that match the search text
+                let matchingOptions = [];
+        
+                // Filter the options based on the search text
                 options.forEach(option => {
                     if (option.text.toLowerCase().includes(searchText)) {
-                        selectElement.appendChild(option);
+                        matchingOptions.push(option);
                     }
                 });
+        
+                // Update the select element with the filtered options
+                selectElement.innerHTML = ''; // Clear the current options
+
+                // Set the dropdown size based on the filtered options
+                selectElement.size = matchingOptions.length;
+                
+                matchingOptions.forEach(option => {
+                    selectElement.appendChild(option);
+                });
+            });
+        
+            // Listen for the change event on the select element
+            selectElement.addEventListener('change', function() {
+                // Collapse the dropdown by setting size to 1
+                selectElement.size = 1;
+                searchInput.value= '';
             });
         });
-    </script>
+        </script>
 
     <script src="{% static 'js/pathfinding-browser.min.js' %}"></script>
 </body>
