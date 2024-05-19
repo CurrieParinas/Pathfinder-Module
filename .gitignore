@@ -2,3 +2,5 @@
 /node_modules
 /pathfinder/static/node_modules
 
+/pathfinder/wayfinderpro/__pycache__
+*.pyc

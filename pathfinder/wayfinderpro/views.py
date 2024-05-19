@@ -9,14 +9,8 @@ def home(request):
     }
     return render(request, 'wayfinderpro/initial.html', context)
 
-def finder(request):
-    context = {
-        'rooms': Room.objects.all()
-    }
-    return render(request, 'wayfinderpro/finder.html', context)
-
 # Add error checking 
-def displayPath(request):
+def finder(request):
     if request.method == 'POST':
         selected_room_slug = request.POST['room_selection']
 
@@ -28,6 +22,11 @@ def displayPath(request):
         context = {
         'rooms': Room.objects.all(),
         'selectedRoom': selected_room,
+        }
+        return render(request, 'wayfinderpro/finder.html', context)
+    else:
+        context = {
+        'rooms': Room.objects.all()
         }
         return render(request, 'wayfinderpro/finder.html', context)
 

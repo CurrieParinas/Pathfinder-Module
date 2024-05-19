@@ -202,7 +202,7 @@
         <div class="content">
             <div class="searchArea">
                 <h1 class="titles">Select a Room</h1>
-                <form action="/finder/displayPath/" method="post">
+                <form action="/finder/" method="post">
                     {% csrf_token %}
                     <div class="searchBox">
                         <div class="search-wrapper">
@@ -212,7 +212,7 @@
                         {% comment %} <br> {% endcomment %}
                         <select class="roomdrop" name="room_selection" id="room-selection" size = 5>
                             {% for room in rooms %}
-                                <option class="options" value="{{ room.slug }}">{{ room.name }}</option>
+                                <option class="options" value="{{ room.slug }}" room-nickname="{{ room.nickname }}">{{ room.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -222,7 +222,9 @@
             {% comment %} <div class="canvasContainer" id="canvasContainer"></div> {% endcomment %}
             <script>
             document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('search-room');
                 const selectElement = document.getElementById('room-selection');
+                const options = Array.from(selectElement.options);
 
                 selectElement.addEventListener('mouseover', function(event) {
                     if (event.target.tagName === 'OPTION') {
@@ -236,9 +238,7 @@
                     }
                 });
 
-                const searchInput = document.getElementById('search-room');
-                const selectElement = document.getElementById('room-selection');
-                const options = Array.from(selectElement.options);
+                
             
                 searchInput.addEventListener('input', function() {
                     const searchText = searchInput.value.toLowerCase();
@@ -246,7 +246,7 @@
             
                     // Filter the options based on the search text
                     options.forEach(option => {
-                        if (option.text.toLowerCase().includes(searchText)) {
+                        if (option.text.toLowerCase().includes(searchText) || option.getAttribute('room-nickname').toLowerCase().includes(searchText)) {
                             matchingOptions.push(option);
                         }
                     });

@@ -4,6 +4,7 @@ from django.utils import timezone
 # Create your models here.
 class Room(models.Model):
     name = models.CharField(max_length=100)
+    nickname = models.CharField(max_length=100, null=True)
     slug = models.SlugField(null=True)
     x = models.IntegerField()
     y = models.IntegerField()
