@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from .models import Room
-
+from django.http import HttpResponse, JsonResponse
+from .models import Room, Building
+import os
+from django.conf import settings
 # Create your views here.
 def home(request):
     context = {
@@ -19,14 +20,26 @@ def finder(request):
         except Room.DoesNotExist:
             return HttpResponse("Room not found")
         print(selected_room)
+        directory_path = os.path.join(settings.BASE_DIR, 'static', 'maps', selected_room.college, selected_room.building)
+
+        try:
+            files = os.listdir(directory_path)
+            csv_files = [file for file in files if file.endswith('.csv')]
+            print(csv_files)
+        except FileNotFoundError:
+            return JsonResponse([], safe=False)
+        
         context = {
         'rooms': Room.objects.all(),
+        'buildings': Building.objects.all(),
         'selectedRoom': selected_room,
+        'floors' : csv_files
         }
         return render(request, 'wayfinderpro/finder.html', context)
     else:
         context = {
-        'rooms': Room.objects.all()
+        'rooms': Room.objects.all(),
+        'buildings': Building.objects.all(),
         }
         return render(request, 'wayfinderpro/finder.html', context)
 

@@ -282,7 +282,9 @@
                     var gridSize = 10;
                     var gridWidth = 100;
                     var gridHeight = 100;
-                    var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv','RH-FLOOR-3.csv'];
+                    var selectedRoomCollege = '{{selectedRoom.college}}'
+                    var selectedRoomBuilding = '{{selectedRoom.building}}'
+                    var floors = {{floors|safe}};
                     // var floors = ['RH-FLOOR-1-testing.csv', 'RH-FLOOR-2-testing.csv'];
                     var roomFound = false;
                     var roomFoundFloorIndex = -1;
@@ -299,7 +301,7 @@
                             const floor = floors[i];
                             if(!endLoop){
                                     try {
-                                    const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
+                                    const response = await fetch(`http://127.0.0.1:8000/static/maps/${selectedRoomCollege}/${selectedRoomBuilding}/${floor}?v=${new Date().getTime()}`);
                                     const mapText = await response.text();
                                     const map = parseMap(mapText);
                                     let startPoint = findStartPoint(map);
