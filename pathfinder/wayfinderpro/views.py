@@ -9,6 +9,27 @@ def home(request):
     }
     return render(request, 'wayfinderpro/initial.html', context)
 
+# Add error checking 
+def finder(request):
+    if request.method == 'POST':
+        selected_room_slug = request.POST['room_selection']
+
+        try:
+            selected_room = Room.objects.get(slug=selected_room_slug)
+        except Room.DoesNotExist:
+            return HttpResponse("Room not found")
+        print(selected_room)
+        context = {
+        'rooms': Room.objects.all(),
+        'selectedRoom': selected_room,
+        }
+        return render(request, 'wayfinderpro/finder.html', context)
+    else:
+        context = {
+        'rooms': Room.objects.all()
+        }
+        return render(request, 'wayfinderpro/finder.html', context)
+
 def get_room_coordinates(request, slug):
     try:
         currentRoom = Room.objects.get(slug=slug)

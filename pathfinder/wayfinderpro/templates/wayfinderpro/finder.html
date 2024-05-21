@@ -1,0 +1,460 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wayfinder Pro - Finder</title>
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+    <style>
+        body {
+            background-color: #800000;
+        }
+        .navbar {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            background-color: #800000;
+            
+        }
+        .logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            padding-left: 20px;
+            gap: 20px;
+        }
+        .logo span {
+            margin-top: -10px;
+        }
+        .list {
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            gap: 30px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            padding-right: 2rem;
+        }
+        .logo img {
+            width: 70px;
+            height: 70px;
+        }
+        .about {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .about img {
+            width: 30px;
+            height: 30px;
+        }
+        .colleges {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .colleges img {
+            width: 30px;
+            height: 30px;
+        }
+        .viewrooms {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .viewrooms img {
+            width: 30px;
+            height: 30px;
+        }
+        .mapcontainer {
+            background-color: white;
+            margin-left: -1vw;
+            width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .content {
+            display: flex;
+            width: 90%;
+            min-height: 90vh;
+            margin-left: 5%;
+            margin-right: 5%;
+            box-sizing: border-box;
+        }
+        .searchArea {
+            width: 25%;
+            padding: 1rem;
+            height: 100rem;
+        }
+        .searchBox {
+            box-sizing: border-box;
+            background-color: #F8F9FA;
+            height: 70%;
+            border-radius: 0.2rem;
+            border: 2px solid #E2E3E4;
+            padding: 2rem;
+            box-sizing: border-box;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .mapdisplay {
+            width: 75%;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .titles {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        .holder {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.2rem;
+            border-radius: 0.2rem;
+            margin-bottom: 0.4rem;
+            margin-top: 0.4rem;
+            width: 70%;
+        }
+        .roomdrop {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            width: 100%;
+            height: auto;
+            max-height: 10rem;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 0.2rem;
+            background-color: white;
+            overflow-y: auto;
+        }
+        
+        .roomdrop options {
+            padding: 0.5rem;
+        }
+        
+        /* Add a class for hovered options */
+        .options-hover {
+            background-color: red; /* Change this to the desired hover color */
+        }
+        .submitbutton {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            width: 30%;
+            background-color: #848080;
+            color: white;
+            font-weight: 100;
+            border-radius: 0.2rem;
+            border: none;
+            cursor: pointer;
+            padding: 0.3rem;
+        }
+        .submitbutton:hover {
+            background-color: #02632C;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dummycontainer">
+        <div class="navbar">
+            <div class="logo">
+                <img src="{% static 'assets/Logo_Navbar.png' %}" alt="" class="logo">
+                <span class="about"><img src="{% static 'assets/info.svg' %}" alt="">ABOUT ROOMS</span>
+            </div>
+            <div class="list">
+                <div class="colleges">
+                    <img src="{% static 'assets/school.svg' %}" alt="">
+                    <span>COLLEGES</span>
+                </div>
+                <div class="viewrooms">
+                    <img src="{% static 'assets/door.svg' %}" alt="">
+                    <span>VIEW ROOM</span>
+                </div>
+                <div class="welcome">
+                    <span>Welcome, <b>GUEST</b></span>
+                </div>
+                <div class="welcome">
+                    <span><b>|</b></span>
+                </div>
+                <div class="welcome">
+                    <span><b>Log In</b></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mapcontainer">
+        <div class="content">
+            <div class="searchArea">
+                <h1 class="titles">Select a Room</h1>
+                <form action="/finder/" method="post">
+                    {% csrf_token %}
+                    <div class="searchBox">
+                        <div class="search-wrapper">
+                            <input class="holder" type="text" id="search-room" placeholder="Search room...">
+                            <input class="submitbutton" type="submit" value="Submit">
+                        </div>
+                        {% comment %} <br> {% endcomment %}
+                        <select class="roomdrop" name="room_selection" id="room-selection">
+                            {% for room in rooms %}
+                                <option class="options" value="{{ room.slug }}" room-nickname="{{ room.nickname }}">{{ room.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            {% comment %} <div class="canvasContainer" id="canvasContainer"></div> {% endcomment %}
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.getElementById('search-room');
+                const selectElement = document.getElementById('room-selection');
+                const options = Array.from(selectElement.options);
+
+                selectElement.addEventListener('mouseover', function(event) {
+                    if (event.target.tagName === 'OPTION') {
+                        event.target.classList.add('option-hover');
+                    }
+                });
+
+                selectElement.addEventListener('mouseout', function(event) {
+                    if (event.target.tagName === 'OPTION') {
+                        event.target.classList.remove('option-hover');
+                    }
+                });
+
+                
+            
+                searchInput.addEventListener('input', function() {
+                    const searchText = searchInput.value.toLowerCase();
+                    let matchingOptions = [];
+            
+                    // Filter the options based on the search text
+                    options.forEach(option => {
+                        if (option.text.toLowerCase().includes(searchText) || option.getAttribute('room-nickname').toLowerCase().includes(searchText)) {
+                            matchingOptions.push(option);
+                        }
+                    });
+            
+                    // Update the select element with the filtered options
+                    selectElement.innerHTML = ''; // Clear the current options
+
+                    // Set the dropdown size based on the filtered options
+                    selectElement.size = matchingOptions.length;
+                    
+                    matchingOptions.forEach(option => {
+                        selectElement.appendChild(option);
+                    });
+                });
+            
+                // Listen for the change event on the select element
+                selectElement.addEventListener('change', function() {
+                    // Collapse the dropdown by setting size to 1
+                    selectElement.size = 1;
+                    searchInput.value= '';
+                });
+            });
+            </script>
+
+            <script src="{% static 'js/pathfinding-browser.min.js' %}"></script>
+
+            <!-- Conditional to render the path if room has been selected -->
+            <div class="mapdisplay">
+                {% if selectedRoom %}
+                <h1 class="titles">{{ selectedRoom.name }} || Floor {{ selectedRoom.floorNumber }}</h1>
+                <script>
+                    var gridSize = 10;
+                    var gridWidth = 100;
+                    var gridHeight = 100;
+                    var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv','RH-FLOOR-3.csv'];
+                    // var floors = ['RH-FLOOR-1-testing.csv', 'RH-FLOOR-2-testing.csv'];
+                    var roomFound = false;
+                    var roomFoundFloorIndex = -1;
+
+                    function startMultiFloorPathFinding(slug,x,y,floorNumber) {
+                        roomFound = false;
+                        // var roomName = roomNamefromtable.toUpperCase();
+                        fetchAndFindRoom(slug,x,y,floorNumber);
+                    }
+
+                    async function fetchAndFindRoom(slug,x,y,floorNumber) {
+                        endLoop = false
+                        for (let i = 0; i < floors.length; i++) {
+                            const floor = floors[i];
+                            if(!endLoop){
+                                    try {
+                                    const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
+                                    const mapText = await response.text();
+                                    const map = parseMap(mapText);
+                                    let startPoint = findStartPoint(map);
+                                    // let endPoint = findRoomCoordinates(map, roomName) || findRoomCoordinates(map, 'St');'
+                                    let endPoint = []
+
+                                    //check if same floor to use x,y of room
+                                    if(floorNumber == i+1){
+                                        endPoint = [x,y]
+                                        endLoop = true
+                                    }else{
+                                        //redirect to stairs if not same floor
+                                        endPoint = findRoomCoordinates(map, 'St')
+                                    }
+
+                                    console.log(`Floor ${i+1}: Start point: ${startPoint}, End point: ${endPoint}`);
+
+                                    if (endPoint) {
+                                        roomFound = true;
+                                        roomFoundFloorIndex = i;
+                                        drawGridAndPath(map, startPoint, endPoint, i);
+                                        // if(roomFoundFloorIndex === 0 && i === 0 && roomFound) break;
+
+                                    }
+                                } catch (error) {
+                                    console.error(`Error fetching or processing map from ${floor}:`, error);
+                                }
+                            }
+                            
+                        }
+
+                        if (!roomFound) {
+                            console.error('Room not found on any floor.');
+                        }
+                    }
+
+                    function drawGridAndPath(map, startPoint, endPoint, floorIndex) {
+                        const ctx = createCanvasForFloor(floorIndex);
+                        drawGrid(map, ctx);
+                        if (startPoint && endPoint) {
+                            initializeGridAndRenderPath(map, startPoint, endPoint, ctx);
+                        }
+                    }
+
+                    function createCanvasForFloor(index) {
+                        const canvasContainer = document.getElementById('canvasContainer');
+                        const canvas = document.createElement('canvas');
+                        canvas.id = `floorCanvas${index}`;
+                        canvas.width = 1000;
+                        canvas.height = 1000;
+                        canvasContainer.appendChild(canvas);
+                        return canvas.getContext('2d');
+                    }
+
+                    function parseMap(mapText) {
+                        return mapText.split('\n').map(row => row.split(','));
+                    }
+
+                    function findStartPoint(map) {
+                        for (let i = 0; i < map.length; i++) {
+                            for (let j = 0; j < map[i].length; j++) {
+                                if (map[i][j].trim() === 'S') {
+                                    return [i, j];
+                                }
+                            }
+                        }
+                        return null;
+                    }
+
+                    function findRoomCoordinates(map, roomName) {
+                        for (let i = 0; i < map.length; i++) {
+                            for (let j = 0; j < map[i].length; j++) {
+                                if (map[i][j].trim().toUpperCase() === roomName) {
+                                    return [i, j];
+                                }
+                                else if (map[i][j].trim() === roomName && roomName === 'St') {
+                                    return [i, j];
+                                }
+                            }
+                        }
+                        return null;
+                    }
+
+                    function drawGrid(map, ctx) {
+                        ctx.clearRect(0, 0, 1000, 1000);
+                        for (let i = 0; i < map.length; i++) {
+                            for (let j = 0; j < map[i].length; j++) {
+                                ctx.fillStyle = (map[i][j] === '#') ? 'black' : 'white';
+                                ctx.fillRect(j * gridSize, i * gridSize, gridSize, gridSize);
+                            }
+                        }
+                    }
+
+                    function initializeGridAndRenderPath(map, startPoint, endPoint, ctx) {
+                        var grid = new PF.Grid(map[0].length, map.length);
+
+                        for (let i = 0; i < map.length; i++) {
+                            for (let j = 0; j < map[i].length; j++) {
+                                grid.setWalkableAt(j, i, map[j][i] !== '#');
+                            }
+                        }
+                        var finder = new PF.AStarFinder();
+                        var path = finder.findPath(startPoint[0], startPoint[1], endPoint[0], endPoint[1], grid);
+                        console.log('Path:', path);
+
+                        if (path.length === 0) {
+                            console.log('No path found or start/end points are blocked.');
+                            return;
+                        }
+
+                        let step = 0;
+
+                        var highlights = [0];
+                        var numberOfHighlights = 3;
+                        var highlightLength = 1;
+                        var spacing = Math.floor(path.length / numberOfHighlights);
+
+                        for (let i = 1; i < numberOfHighlights; i++) {
+                            highlights.push((highlights[i - 1] + spacing) % path.length);
+                        }
+
+                        function drawPathStep() {
+                            ctx.clearRect(0, 0, 1000, 1000);
+                            drawGrid(map, ctx);
+
+                            path.forEach((pos) => {
+                                ctx.fillStyle = 'darkgreen';
+                                ctx.fillRect(pos[1] * gridSize, pos[0] * gridSize, gridSize, gridSize);
+                            });
+
+                            highlights.forEach((start, index) => {
+                                for (let i = 0; i < highlightLength; i++) {
+                                    let pos = path[(start + i) % path.length];
+                                    ctx.fillStyle = 'limegreen';
+                                    ctx.fillRect(pos[1] * gridSize, pos[0] * gridSize, gridSize, gridSize);
+                                }
+
+                                highlights[index] = (start + 1) % path.length;
+                            });
+
+                            setTimeout(drawPathStep, 100);
+                        }
+
+                        drawPathStep();
+                    }
+                    
+                    console.log('{{ selectedRoom.slug }}')
+                    startMultiFloorPathFinding('{{ selectedRoom.slug }}', '{{ selectedRoom.x }}', '{{ selectedRoom.y }}', '{{ selectedRoom.floorNumber }}')
+                </script>
+                {% endif %}
+                <div class="canvasContainer" id="canvasContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+  
+    
+</body>
+</html>

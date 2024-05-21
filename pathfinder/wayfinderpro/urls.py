@@ -5,5 +5,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.home, name='wayfinderpro-home'),
+    path('finder/', views.finder, name='wayfinderpro-room-finder'),
+
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
