@@ -1,11 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.core.serializers import serialize
 from .models import Room
 
 # Create your views here.
 def home(request):
+    rooms = Room.objects.all()
     context = {
-        'rooms': Room.objects.all()
+        'rooms': rooms,
+        'rooms_json': serialize('json', rooms)
     }
     return render(request, 'wayfinderpro/initial.html', context)
 

@@ -275,6 +275,7 @@
         </div>
     </div>
     <script>
+        var roomsList = JSON.parse('{{ rooms_json|escapejs }}');
         var gridSize = 8;
         var gridWidth = 80;
         var gridHeight = 80;
@@ -336,7 +337,7 @@
 
         function drawGridAndPath(map, startPoint, endPoint, floorIndex) {
             const ctx = createCanvasForFloor(floorIndex);
-            drawGrid(map, ctx);
+            drawGrid(map, ctx, floorIndex);
             if (startPoint && endPoint) {
                 initializeGridAndRenderPath(map, startPoint, endPoint, ctx);
             }
@@ -381,7 +382,7 @@
             return null;
         }
 
-        function drawGrid(map, ctx) {
+        function drawGrid(map, ctx, floorIndex) {
             ctx.clearRect(0, 0, 1000, 1000);
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
@@ -395,6 +396,28 @@
                     ctx.fillRect(j * gridSize, i * gridSize, gridSize, gridSize);
                 }
             }
+
+            // Draw text
+            ctx.font = '9px Arial'; // Set font
+            roomsList.forEach(roomObj => {
+                const room = roomObj.fields; // Accessing the "fields" object of each room object
+                if (room.floorNumber === floorIndex + 1) {
+                    const i = room.x;
+                    const j = room.y;
+                    const text = room.name;
+                    // Calculate text width to center it within the cell
+                    const textWidth = ctx.measureText(text).width;
+                    const textHeight = 9;
+                    const startX = j * gridSize + (gridSize - textWidth) / 2;
+                    const startY = i * gridSize + textHeight / 2;
+                    
+                    ctx.fillStyle = 'rgb(255, 230, 128, 0.8)';
+                    ctx.fillRect(startX - 2, startY - textHeight + 2, textWidth + 4, textHeight + 2);
+
+                    ctx.fillStyle = 'green'; // Set text color
+                    ctx.fillText(text, startX, startY); // Display room name
+                }
+            });
         }
 
         function initializeGridAndRenderPath(map, startPoint, endPoint, ctx) {
@@ -426,9 +449,6 @@
             }
 
             function drawPathStep() {
-                ctx.clearRect(0, 0, 1000, 1000);
-                drawGrid(map, ctx);
-
                 path.forEach((pos) => {
                     ctx.fillStyle = 'darkgreen';
                     ctx.fillRect(pos[1] * gridSize, pos[0] * gridSize, gridSize, gridSize);
