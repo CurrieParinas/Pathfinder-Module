@@ -277,9 +277,9 @@
                 <h1 class="titles">{{ selectedRoom.name }} || Floor {{ selectedRoom.floorNumber }}</h1>
                 <script>
                     var roomsList = [];
-                    var gridSize = 10;
-                    var gridWidth = 100;
-                    var gridHeight = 100;
+                    var gridSize = 6;
+                    var gridWidth = 60;
+                    var gridHeight = 60;
                     var selectedRoomCollege = '{{selectedRoom.college}}'
                     var selectedRoomBuilding = '{{selectedRoom.building}}'
                     var floors = [];
@@ -361,8 +361,8 @@
                         const canvasContainer = document.getElementById('canvasContainer');
                         const canvas = document.createElement('canvas');
                         canvas.id = `floorCanvas${index}`;
-                        canvas.width = 1000;
-                        canvas.height = 1000;
+                        canvas.width = 700;
+                        canvas.height = 700;
                         canvasContainer.appendChild(canvas);
                         return canvas.getContext('2d');
                     }
@@ -397,7 +397,7 @@
                     }
 
                     function drawGrid(map, ctx, floorIndex) {
-                        ctx.clearRect(0, 0, 1000, 1000);
+                        ctx.clearRect(0, 0, 600, 600);
                         for (let i = 0; i < map.length; i++) {
                             for (let j = 0; j < map[i].length; j++) {
                                 if (map[i][j] === '#') {
@@ -417,7 +417,7 @@
                         }
 
                         // Draw text
-                        ctx.font = '9   px Arial'; // Set a larger font for better readability
+                        ctx.font = '9px Arial'; // Set a larger font for better readability
                         const drawnTexts = []; // Store positions of drawn texts to check for overlaps
 
                         roomsList.forEach(roomObj => {
