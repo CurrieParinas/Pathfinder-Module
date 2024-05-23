@@ -251,12 +251,16 @@
                     {% for room in rooms %}
                     <tr>
                         <td>{{ room.name }}</td>
-                        <td>{{ room.slug }}</td>
+                        <!-- <td>{{ room.slug }}</td>
                         <td>{{ room.x }}</td>
                         <td>{{ room.y }}</td>
-                        <td>{{ room.floorNumber }}</td>
+                        <td>{{ room.floorNumber }}</td> -->
+                        <td class="building">Rizal Hall</td>
+                        <td class="college">College of Arts and Sciences</td>
+                        <td>30</td>
+                        <td>Lecture Room</td>
                         <td class="button">
-                            <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('{{ room.slug }}', '{{ room.x }}', '{{ room.y }}', '{{ room.floorNumber }}')">Find Room</button>
+                            <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('{{ room.slug }}', '{{ room.x }}', '{{ room.y }}', '{{ room.floorNumber }}', this.closest('tr').querySelector('.college').textContent, this.closest('tr').querySelector('.building').textContent)">Find Room</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -279,25 +283,36 @@
         var gridSize = 8;
         var gridWidth = 80;
         var gridHeight = 80;
-        var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv', 'RH-FLOOR-3.csv'];
+        var floors = [];
         var roomFound = false;
         var roomFoundFloorIndex = -1;
         var currentFloorIndex = 0;
 
-        function startMultiFloorPathFinding(slug, x, y, floorNumber) {
+        function startMultiFloorPathFinding(slug, x, y, floorNumber,college,building) {
             roomFound = false;
             clearCanvasContainer();
             modal.style.display = "block";
-            fetchAndFindRoom(slug, x, y, floorNumber);
+
+            const url = `/getFloors/${college}/${building}/`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data['floors']); // Handle the floor data here
+                    floors = data['floors']
+
+                    fetchAndFindRoom(slug, x, y, floorNumber,college,building);
+                })
+                .catch(error => console.error('Error fetching floors:', error));
+
         }
 
-        async function fetchAndFindRoom(slug, x, y, floorNumber) {
+        async function fetchAndFindRoom(slug, x, y, floorNumber,college,building) {
             var endLoop = false;
             for (let i = 0; i < floors.length; i++) {
                 const floor = floors[i];
                 if (!endLoop) {
                     try {
-                        const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
+                        const response = await fetch(`http://127.0.0.1:8000/static/maps/${college}/${building}/${floor}?v=${new Date().getTime()}`);
                         const mapText = await response.text();
                         const map = parseMap(mapText);
                         let startPoint = findStartPoint(map);
@@ -328,7 +343,7 @@
             }
 
             updateButtonStates();
-        }
+            }
 
         function clearCanvasContainer() {
             const canvasContainer = document.getElementById('canvasContainer');
@@ -383,7 +398,7 @@
         }
 
         function drawGrid(map, ctx, floorIndex) {
-            ctx.clearRect(0, 0, 1000, 1000);
+            ctx.clearRect(0, 0, 700, 700);
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
                     if (map[i][j] === '#') {
@@ -397,8 +412,15 @@
                 }
             }
 
+            // Helper function to check for overlap
+            function isOverlapping(x1, y1, w1, h1, x2, y2, w2, h2) {
+                return !(x2 > x1 + w1 || x2 + w2 < x1 || y2 > y1 + h1 || y2 + h2 < y1);
+            }
+
             // Draw text
-            ctx.font = '9px Arial'; // Set font
+            ctx.font = '9   px Arial'; // Set a larger font for better readability
+            const drawnTexts = []; // Store positions of drawn texts to check for overlaps
+
             roomsList.forEach(roomObj => {
                 const room = roomObj.fields; // Accessing the "fields" object of each room object
                 if (room.floorNumber === floorIndex + 1) {
@@ -407,17 +429,31 @@
                     const text = room.name;
                     // Calculate text width to center it within the cell
                     const textWidth = ctx.measureText(text).width;
-                    const textHeight = 9;
-                    const startX = j * gridSize + (gridSize - textWidth) / 2;
-                    const startY = i * gridSize + textHeight / 2;
-                    
-                    ctx.fillStyle = 'rgb(255, 230, 128, 0.8)';
-                    ctx.fillRect(startX - 2, startY - textHeight + 2, textWidth + 4, textHeight + 2);
+                    const textHeight = 14; // Height corresponding to the new font size
+                    let startX = j * gridSize + (gridSize - textWidth) / 2;
+                    let startY = i * gridSize + textHeight / 2;
 
-                    ctx.fillStyle = 'green'; // Set text color
+                    // Adjust position if overlapping with previously drawn text
+                    for (let k = 0; k < drawnTexts.length; k++) {
+                        const [prevX, prevY, prevW, prevH] = drawnTexts[k];
+                        if (isOverlapping(startX, startY - textHeight, textWidth, textHeight, prevX, prevY - prevH, prevW, prevH)) {
+                            startY += textHeight + 2; // Move text down by one line height + small margin
+                        }
+                    }
+
+                    // Draw background rectangle with some padding
+                    ctx.fillStyle = 'rgba(255, 230, 128, 0.8)';
+                    ctx.fillRect(startX - 4, startY - textHeight + 4, textWidth + 8, textHeight + 4);
+
+                    // Set text color and draw text
+                    ctx.fillStyle = 'black'; // Black text for better contrast
                     ctx.fillText(text, startX, startY); // Display room name
+
+                    // Save the position and size of the drawn text
+                    drawnTexts.push([startX, startY, textWidth, textHeight]);
                 }
             });
+
         }
 
         function initializeGridAndRenderPath(map, startPoint, endPoint, ctx) {
@@ -502,13 +538,17 @@
 
         span.onclick = function() {
             modal.style.display = "none";
+            currentFloorIndex = 0;
+            showFloor(currentFloorIndex);
         }
 
         window.onclick = function(event) {
             if (event.target == modal) {
                 modal.style.display = "none";
+                currentFloorIndex = 0;
+                showFloor(currentFloorIndex);
             }
-        }
+}
     </script>
     <script src="{% static 'js/pathfinding-browser.min.js' %}"></script>
 </body>
