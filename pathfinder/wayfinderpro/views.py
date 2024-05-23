@@ -69,10 +69,8 @@ import os
 from django.conf import settings
 # Create your views here.
 def home(request):
-    rooms = Room.objects.all()
     context = {
-        'rooms': rooms,
-        'rooms_json': serialize('json', rooms)
+        'rooms': Room.objects.all(),
     }
     return render(request, 'wayfinderpro/initial.html', context)
 
@@ -108,6 +106,16 @@ def finder(request):
         'buildings': Building.objects.all(),
         }
         return render(request, 'wayfinderpro/finder.html', context)
+
+def get_rooms(request, college, building):
+    try:
+        rooms = Room.objects.filter(college=college, building=building)
+        rooms_json = serialize('json', rooms)
+        print(rooms_json)
+    except Room.DoesNotExist:
+        return JsonResponse([], safe=False)
+    
+    return JsonResponse({'rooms_json':rooms_json})
 
 def get_floors(request,college,building):
     directory_path = os.path.join(settings.BASE_DIR, 'static', 'maps', college, building)

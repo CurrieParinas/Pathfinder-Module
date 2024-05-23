@@ -279,7 +279,7 @@
         </div>
     </div>
     <script>
-        var roomsList = JSON.parse('{{ rooms_json|escapejs }}');
+        var roomsList = [];
         var gridSize = 8;
         var gridWidth = 80;
         var gridHeight = 80;
@@ -293,11 +293,20 @@
             clearCanvasContainer();
             modal.style.display = "block";
 
+            const urlRooms = `/getRooms/${college}/${building}/`;
+            fetch(urlRooms)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(JSON.parse(data.rooms_json));
+                    roomsList = JSON.parse(data.rooms_json);
+                })
+                .catch(error => console.error('Error fetching rooms:', error));
+
             const url = `/getFloors/${college}/${building}/`;
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data['floors']); // Handle the floor data here
+                    console.log(data['floors']);
                     floors = data['floors']
 
                     fetchAndFindRoom(slug, x, y, floorNumber,college,building);
@@ -343,7 +352,7 @@
             }
 
             updateButtonStates();
-            }
+        }
 
         function clearCanvasContainer() {
             const canvasContainer = document.getElementById('canvasContainer');
@@ -453,7 +462,6 @@
                     drawnTexts.push([startX, startY, textWidth, textHeight]);
                 }
             });
-
         }
 
         function initializeGridAndRenderPath(map, startPoint, endPoint, ctx) {
