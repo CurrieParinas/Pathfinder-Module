@@ -256,7 +256,7 @@
                         <td>{{ room.y }}</td>
                         <td>{{ room.floorNumber }}</td>
                         <td class="button">
-                            <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('{{ room.slug }}', '{{ room.x }}', '{{ room.y }}', '{{ room.floorNumber }}')">Find Room</button>
+                            <button class="button button-blue" style="background-color: #ffad0d; color: #000000;" onclick="startMultiFloorPathFinding('{{ room.slug }}', '{{ room.x }}', '{{ room.y }}', '{{ room.floorNumber }}', '{{ room.college }}', '{{ room.building }}')">Find Room</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -279,25 +279,41 @@
         var gridSize = 8;
         var gridWidth = 80;
         var gridHeight = 80;
-        var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv', 'RH-FLOOR-3.csv'];
+        var floors = []
+        // var floors = ['RH-FLOOR-1.csv', 'RH-FLOOR-2.csv', 'RH-FLOOR-3.csv'];
         var roomFound = false;
         var roomFoundFloorIndex = -1;
         var currentFloorIndex = 0;
 
-        function startMultiFloorPathFinding(slug, x, y, floorNumber) {
+        function startMultiFloorPathFinding(slug, x, y, floorNumber,college,building) {
             roomFound = false;
             clearCanvasContainer();
             modal.style.display = "block";
-            fetchAndFindRoom(slug, x, y, floorNumber);
+
+            const url = `/getFloors/${college}/${building}/`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data['floors']); // Handle the floor data here
+                    floors = data['floors']
+
+                    fetchAndFindRoom(slug, x, y, floorNumber,college,building);
+                })
+                .catch(error => console.error('Error fetching floors:', error));
+
         }
 
-        async function fetchAndFindRoom(slug, x, y, floorNumber) {
+        async function fetchAndFindRoom(slug, x, y, floorNumber,college,building) {
+
+            
+
+
             var endLoop = false;
             for (let i = 0; i < floors.length; i++) {
                 const floor = floors[i];
                 if (!endLoop) {
                     try {
-                        const response = await fetch(`http://127.0.0.1:8000/static/maps/${floor}?v=${new Date().getTime()}`);
+                        const response = await fetch(`http://127.0.0.1:8000/static/maps/${college}/${building}/${floor}?v=${new Date().getTime()}`);
                         const mapText = await response.text();
                         const map = parseMap(mapText);
                         let startPoint = findStartPoint(map);

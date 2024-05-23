@@ -6,6 +6,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('', views.home, name='wayfinderpro-home'),
     path('finder/', views.finder, name='wayfinderpro-room-finder'),
-
+    path('getFloors/<str:college>/<str:building>/', views.get_floors, name='get_floors'),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
