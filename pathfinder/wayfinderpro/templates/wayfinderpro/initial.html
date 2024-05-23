@@ -202,7 +202,24 @@
         .floor-buttons button:hover:not(:disabled) {
             background-color: #e69a00;
         }
+        .modal-loading {
+            display: none;
+            position: fixed;
+            z-index: 2; /* Higher than the modal's z-index */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+        }
 
+        .loading-content {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -269,6 +286,9 @@
         </div>
     </div>
     <div id="mapModal" class="modal">
+        <div id="modalLoading" class="modal-loading">
+            <div class="loading-content">Loading...</div>
+        </div>
         <div class="modal-content">
             <span class="close">&times;</span>
             <div class="canvasContainer" id="canvasContainer"></div>
@@ -277,7 +297,7 @@
                 <button id="nextButton" onclick="changeFloor(1)">Next</button>
             </div>
         </div>
-    </div>
+    </div>    
     <script>
         var roomsList = [];
         var gridSize = 8;
@@ -288,7 +308,12 @@
         var roomFoundFloorIndex = -1;
         var currentFloorIndex = 0;
 
-        function startMultiFloorPathFinding(slug, x, y, floorNumber,college,building) {
+        var isFirstTime = true;
+
+        function startMultiFloorPathFinding(slug, x, y, floorNumber, college, building) {
+            // if (isFirstTime) {
+            //     showLoadingScreen();
+            // }
             roomFound = false;
             clearCanvasContainer();
             modal.style.display = "block";
@@ -309,10 +334,19 @@
                     console.log(data['floors']);
                     floors = data['floors']
 
-                    fetchAndFindRoom(slug, x, y, floorNumber,college,building);
+                    fetchAndFindRoom(slug, x, y, floorNumber, college, building);
                 })
                 .catch(error => console.error('Error fetching floors:', error));
+        }
 
+        function showLoadingScreen() {
+            const loadingScreen = document.getElementById('modalLoading');
+            loadingScreen.style.display = 'flex';
+
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                isFirstTime = false;
+            }, 3000);
         }
 
         async function fetchAndFindRoom(slug, x, y, floorNumber,college,building) {
@@ -321,7 +355,7 @@
                 const floor = floors[i];
                 if (!endLoop) {
                     try {
-                        const response = await fetch(`http://127.0.0.1:8000/static/maps/${college}/${building}/${floor}?v=${new Date().getTime()}`);
+                        const response = await fetch(`http://127.0.0.1:8000/static/maps/${college}/${building}/${floor}`);
                         const mapText = await response.text();
                         const map = parseMap(mapText);
                         let startPoint = findStartPoint(map);
@@ -421,14 +455,8 @@
                 }
             }
 
-            // Helper function to check for overlap
-            function isOverlapping(x1, y1, w1, h1, x2, y2, w2, h2) {
-                return !(x2 > x1 + w1 || x2 + w2 < x1 || y2 > y1 + h1 || y2 + h2 < y1);
-            }
-
             // Draw text
-            ctx.font = '9   px Arial'; // Set a larger font for better readability
-            const drawnTexts = []; // Store positions of drawn texts to check for overlaps
+            ctx.font = '9px Arial'; // Set a larger font for better readability
 
             roomsList.forEach(roomObj => {
                 const room = roomObj.fields; // Accessing the "fields" object of each room object
@@ -436,30 +464,49 @@
                     const i = room.x;
                     const j = room.y;
                     const text = room.name;
-                    // Calculate text width to center it within the cell
+                    // Calculate text width and height
                     const textWidth = ctx.measureText(text).width;
                     const textHeight = 14; // Height corresponding to the new font size
-                    let startX = j * gridSize + (gridSize - textWidth) / 2;
-                    let startY = i * gridSize + textHeight / 2;
+                    let startX = j * gridSize;
+                    let startY = i * gridSize;
 
-                    // Adjust position if overlapping with previously drawn text
-                    for (let k = 0; k < drawnTexts.length; k++) {
-                        const [prevX, prevY, prevW, prevH] = drawnTexts[k];
-                        if (isOverlapping(startX, startY - textHeight, textWidth, textHeight, prevX, prevY - prevH, prevW, prevH)) {
-                            startY += textHeight + 2; // Move text down by one line height + small margin
-                        }
-                    }
+                    // Center the text and background
+                    const centeredX = startX - textWidth / 2;
+                    const centeredY = startY + textHeight / 2;
 
-                    // Draw background rectangle with some padding
-                    ctx.fillStyle = 'rgba(255, 230, 128, 0.8)';
-                    ctx.fillRect(startX - 4, startY - textHeight + 4, textWidth + 8, textHeight + 4);
+                    // Draw and rotate background and text
+                    ctx.save(); // Save the current context state
+                    ctx.translate(centeredX, centeredY); // Move to the text's position
+                    ctx.rotate(-Math.PI / 12); // Rotate by 45 degrees (in radians)
+
+                    // Draw rounded rectangle background with some padding
+                    const padding = 4;
+                    const rectX = -padding;
+                    const rectY = -textHeight + padding;
+                    const rectWidth = textWidth + 2 * padding;
+                    const rectHeight = textHeight + padding;
+                    const radius = 5; // Radius for rounded corners
+
+                    ctx.fillStyle = 'rgba(255, 173, 13, .8)';
+                    ctx.beginPath();
+                    ctx.moveTo(rectX + radius, rectY);
+                    ctx.arcTo(rectX + rectWidth, rectY, rectX + rectWidth, rectY + rectHeight, radius);
+                    ctx.arcTo(rectX + rectWidth, rectY + rectHeight, rectX, rectY + rectHeight, radius);
+                    ctx.arcTo(rectX, rectY + rectHeight, rectX, rectY, radius);
+                    ctx.arcTo(rectX, rectY, rectX + rectWidth, rectY, radius);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Draw outline for the rounded rectangle
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
 
                     // Set text color and draw text
                     ctx.fillStyle = 'black'; // Black text for better contrast
-                    ctx.fillText(text, startX, startY); // Display room name
+                    ctx.fillText(text, 0, 0); // Display room name at the new rotated position
 
-                    // Save the position and size of the drawn text
-                    drawnTexts.push([startX, startY, textWidth, textHeight]);
+                    ctx.restore(); // Restore the context to its original state
                 }
             });
         }
