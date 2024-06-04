@@ -14,8 +14,8 @@
         }
 
         canvas {
-            width: 750px;
-            height: 750px;
+            width: 1000px;
+            height: 1000px;
         }
 
         .navbar {
@@ -148,7 +148,7 @@
             padding: 20px;
             border: 1px solid #888;
             border-radius: 10px;
-            width: 50%;
+            width: 1200px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease;
             transform: translateY(-20px);
@@ -294,29 +294,39 @@
             <div class="canvasContainer" id="canvasContainer"></div>
             <div class="floor-buttons">
                 <button id="backButton" onclick="changeFloor(-1)">Back</button>
+                <div id="floorInfo"></div>
                 <button id="nextButton" onclick="changeFloor(1)">Next</button>
             </div>
         </div>
     </div>    
     <script>
         var roomsList = [];
-        var gridSize = 8;
-        var gridWidth = 80;
-        var gridHeight = 80;
+        var gridSize = 10;
+        var gridWidth = 100;
+        var gridHeight = 100;
         var floors = [];
         var roomFound = false;
         var roomFoundFloorIndex = -1;
         var currentFloorIndex = 0;
+        var collegeGlobal = '';
+        var buildingGlobal = '';
 
         var isFirstTime = true;
 
         function startMultiFloorPathFinding(slug, x, y, floorNumber, college, building) {
-            // if (isFirstTime) {
-            //     showLoadingScreen();
-            // }
+            collegeGlobal = college;
+            buildingGlobal = building;
             roomFound = false;
             clearCanvasContainer();
             modal.style.display = "block";
+            const floorInfoDiv = document.getElementById('floorInfo');
+            floorInfoDiv.innerHTML = `
+                <div style="font-family: 'Montserrat', sans-serif;">
+                    <strong>College:</strong> ${collegeGlobal},     
+                    <strong>Building:</strong> ${buildingGlobal},      
+                    <strong>Floor:</strong> ${currentFloorIndex + 1} 
+                </div>
+            `;
 
             const urlRooms = `/getRooms/${college}/${building}/`;
             fetch(urlRooms)
@@ -407,8 +417,8 @@
             const canvasContainer = document.getElementById('canvasContainer');
             const canvas = document.createElement('canvas');
             canvas.id = `floorCanvas${index}`;
-            canvas.width = 800;
-            canvas.height = 800;
+            canvas.width = 1000;
+            canvas.height = 1000;
             canvas.style.display = index === currentFloorIndex ? 'block' : 'none';
             canvasContainer.appendChild(canvas);
             return canvas.getContext('2d');
@@ -443,7 +453,7 @@
         }
 
         function drawGrid(map, ctx, floorIndex) {
-            ctx.clearRect(0, 0, 700, 700);
+            ctx.clearRect(0, 0, 1000, 1000);
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
                     if (map[i][j] === '#') {
@@ -451,9 +461,9 @@
                     } else if (map[i][j] === 'St' || map[i][j] === 's' || map[i][j] === 'x') {
                         ctx.fillStyle = '#a7c7e7';
                     } else if (map[i][j] === 'r') {
-                        ctx.fillStyle = '#E1ACAC';
+                        ctx.fillStyle = '#ffe5b0';
                     } else if (map[i][j] === 'e') {
-                        ctx.fillStyle = '#F7DCB9';
+                        ctx.fillStyle = '#737373';
                     }
                      else {
                         ctx.fillStyle = 'white';
@@ -463,7 +473,7 @@
             }
 
             // Draw text
-            ctx.font = '9px Arial'; // Set a larger font for better readability
+            ctx.font = '14px Arial'; // Set a larger font for better readability
 
             roomsList.forEach(roomObj => {
                 const room = roomObj.fields; // Accessing the "fields" object of each room object
@@ -484,12 +494,12 @@
                     // Draw and rotate background and text
                     ctx.save(); // Save the current context state
                     ctx.translate(centeredX, centeredY); // Move to the text's position
-                    ctx.rotate(-Math.PI / 12); // Rotate by 45 degrees (in radians)
+                    ctx.rotate(-Math.PI / 6); // Rotate by 45 degrees (in radians)
 
                     // Draw rounded rectangle background with some padding
                     const padding = 4;
                     const rectX = -padding;
-                    const rectY = -textHeight + padding;
+                    const rectY = -textHeight;
                     const rectWidth = textWidth + 2 * padding;
                     const rectHeight = textHeight + padding;
                     const radius = 5; // Radius for rounded corners
@@ -574,6 +584,14 @@
                 canvas.style.display = i === index ? 'block' : 'none';
             });
             updateButtonStates();
+            const floorInfoDiv = document.getElementById('floorInfo');
+            floorInfoDiv.innerHTML = `
+                <div style="font-family: 'Montserrat', sans-serif;">
+                    <strong>College:</strong> ${collegeGlobal},     
+                    <strong>Building:</strong> ${buildingGlobal},      
+                    <strong>Floor:</strong> ${currentFloorIndex + 1} 
+                </div>
+            `;
         }
 
         function changeFloor(direction) {
