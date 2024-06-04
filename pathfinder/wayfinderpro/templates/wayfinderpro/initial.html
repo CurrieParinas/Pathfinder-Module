@@ -450,7 +450,12 @@
                         ctx.fillStyle = 'black';
                     } else if (map[i][j] === 'St' || map[i][j] === 's' || map[i][j] === 'x') {
                         ctx.fillStyle = '#a7c7e7';
-                    } else {
+                    } else if (map[i][j] === 'r') {
+                        ctx.fillStyle = '#E1ACAC';
+                    } else if (map[i][j] === 'e') {
+                        ctx.fillStyle = '#F7DCB9';
+                    }
+                     else {
                         ctx.fillStyle = 'white';
                     }
                     ctx.fillRect(j * gridSize, i * gridSize, gridSize, gridSize);
@@ -518,12 +523,11 @@
 
             for (let i = 0; i < map.length; i++) {
                 for (let j = 0; j < map[i].length; j++) {
-                    grid.setWalkableAt(j, i, map[j][i] !== '#' && map[j][i] !== ' ' && map[j][i] !== 's');
+                    grid.setWalkableAt(j, i, map[j][i] !== '#' && map[j][i] !== ' ' && map[j][i] !== 's' && map[j][i] !== 'r' && map[j][i] !== 'e');
                 }
             }
             var finder = new PF.AStarFinder();
             var path = finder.findPath(startPoint[0], startPoint[1], endPoint[0], endPoint[1], grid);
-            console.log('Path:', path);
 
             if (path.length === 0) {
                 console.log('No path found or start/end points are blocked.');
